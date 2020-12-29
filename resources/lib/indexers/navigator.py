@@ -180,10 +180,9 @@ class navigator:
         title = client.parseDOM(title, 'span')[0]
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'poster'}, ret='src')[0]
         plot = client.replaceHTMLCodes(client.parseDOM(url_content, 'p', attrs={'itemprop': 'description'})[0])
-        episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
-        if len(episodes) == 0:
+        if "megoszto_link" not in url_content:
             url_content = client.request(url, proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
-            episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
+        episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
         for episode in episodes.splitlines():
             matches = re.search(r'<a href="([^"]*)"(.*)>(.*)</a>(.*)', episode)
             if matches:
