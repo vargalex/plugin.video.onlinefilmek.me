@@ -171,7 +171,7 @@ class navigator:
         url_content = client.request(url)
         if "megoszto_link" not in url_content:
             xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % self.helper.replace("S", "=").replace("Y", "").decode('base64'), xbmc.LOGNOTICE)
-            url_content = client.request(url, proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
+            url_content = client.request(url.replace("https", "http"), proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
         sourcesUrl = client.parseDOM(url_content, 'a', attrs={'id': 'megoszto_link'}, ret='href')[0]
         self.getSources(sourcesUrl)
 
@@ -181,9 +181,10 @@ class navigator:
         title = client.parseDOM(title, 'span')[0]
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'poster'}, ret='src')[0]
         plot = client.replaceHTMLCodes(client.parseDOM(url_content, 'p', attrs={'itemprop': 'description'})[0])
+        url_content = "asas"
         if "megoszto_link" not in url_content:
             xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % self.helper.replace("S", "=").replace("Y", "").decode('base64'), xbmc.LOGNOTICE)
-            url_content = client.request(url, proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
+            url_content = client.request(url.replace("https", "http"), proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
         episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
         for episode in episodes.splitlines():
             matches = re.search(r'<a href="([^"]*)"(.*)>(.*)</a>(.*)', episode)
