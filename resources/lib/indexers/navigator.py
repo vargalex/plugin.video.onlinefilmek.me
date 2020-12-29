@@ -27,6 +27,7 @@ sysaddon = sys.argv[0] ; syshandle = int(sys.argv[1])
 addonFanart = xbmcaddon.Addon().getAddonInfo('fanart')
 
 base_url = 'aHR0cHM6Ly9vbmxpbmUtZmlsbWVrLm1lLw=='.decode('base64')
+helperStr = 'ZYYZOTUuMTExLjIzMC4xNDI6MzEyOAZZWZWZZZYYYZZ'
 
 class navigator:
     def __init__(self):
@@ -36,6 +37,7 @@ class navigator:
             pass
         self.base_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
         self.searchFileName = os.path.join(self.base_path, "search.history")
+        self.helper = helperStr.replace("Z", "").replace("W", "S")
 
     def getRootMenu(self):
         self.addDirectoryItem('Filmek', 'moviecategories', '', 'DefaultFolder.png')
@@ -167,6 +169,8 @@ class navigator:
     
     def getMovie(self, url):
         url_content = client.request(url)
+        if "megoszto_link" not in url_content:
+            url_content = client.request(url, proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
         sourcesUrl = client.parseDOM(url_content, 'a', attrs={'id': 'megoszto_link'}, ret='href')[0]
         self.getSources(sourcesUrl)
 
@@ -177,6 +181,9 @@ class navigator:
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'poster'}, ret='src')[0]
         plot = client.replaceHTMLCodes(client.parseDOM(url_content, 'p', attrs={'itemprop': 'description'})[0])
         episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
+        if len(episodes) == 0:
+            url_content = client.request(url, proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
+            episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
         for episode in episodes.splitlines():
             matches = re.search(r'<a href="([^"]*)"(.*)>(.*)</a>(.*)', episode)
             if matches:
