@@ -181,7 +181,6 @@ class navigator:
         title = client.parseDOM(title, 'span')[0]
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'poster'}, ret='src')[0]
         plot = client.replaceHTMLCodes(client.parseDOM(url_content, 'p', attrs={'itemprop': 'description'})[0])
-        url_content = "asas"
         if "megoszto_link" not in url_content:
             xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % self.helper.replace("S", "=").replace("Y", "").decode('base64'), xbmc.LOGNOTICE)
             url_content = client.request(url.replace("https", "http"), proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
