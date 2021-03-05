@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.onlinefilmek.me" name="onlinefilmek.me" version="1.0.1" provider-name="vargalex">
+<addon id="plugin.video.onlinefilmek.me" name="onlinefilmek.me" version="1.0.2" provider-name="vargalex">
 	<requires>
-		<import addon="xbmc.python" version="2.24.0"/>
 		<import addon="script.module.urlresolver" version="3.0.0"/>
 	</requires>
 	<extension point="xbmc.python.pluginsource" library="default.py">
@@ -12,7 +11,7 @@
 		<description lang="en">Nézd meg a filmeket, sorozatokat a https://www.online-filmek.me/ oldalról!</description>
 		<language>hu</language>
 		<platform>all</platform>
-		<news>- Elérés tiltott IP-ről
+		<news>- Matrix kompatibilitás
 		</news>
 		<assets>
 		  <icon>icon.png</icon>

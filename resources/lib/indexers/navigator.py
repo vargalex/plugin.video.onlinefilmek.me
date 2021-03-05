@@ -19,14 +19,21 @@
 '''
 
 
-import os,sys,re,xbmc,xbmcgui,xbmcplugin,xbmcaddon,urllib,urlparse,base64,time, locale
+import os,sys,re,xbmc,xbmcgui,xbmcplugin,xbmcaddon,base64,time, locale
 import urlresolver
 from resources.lib.modules import client
+from resources.lib.modules.utils import py2_encode
+
+if sys.version_info[0] == 3:
+    from urllib.parse import quote_plus
+else:
+    from urllib import quote_plus
+
 
 sysaddon = sys.argv[0] ; syshandle = int(sys.argv[1])
 addonFanart = xbmcaddon.Addon().getAddonInfo('fanart')
 
-base_url = 'aHR0cHM6Ly9vbmxpbmUtZmlsbWVrLm1lLw=='.decode('base64')
+base_url = 'https://online-filmek.me/'
 helperStr = 'ZYYZOTUuMTExLjIzMC4xNDI6MzEyOAZZWZWZZZYYYZZ'
 
 class navigator:
@@ -77,7 +84,7 @@ class navigator:
         buttons = client.parseDOM(url_content, 'div', attrs={'class': 'buttons'})
         if len(buttons)>1:
             pages = buttons[1].replace('</a>', '</a>\n').splitlines()
-            if "következő oldal" in pages[len(pages)-1].encode('utf-8'):
+            if "következő oldal" in py2_encode(pages[len(pages)-1]):
                 matches = re.search(r'<a href="([^"]*)"(.*)$', pages[len(pages)-1])
                 if matches:
                     self.addDirectoryItem("[I]Következő oldal >>[/I]", 'movies&url=%s' % (matches.group(1)), '', 'DefaultFolder.png')
@@ -92,7 +99,7 @@ class navigator:
             items.sort(cmp=locale.strcoll)
             file.close()
             for item in items:
-                self.addDirectoryItem(item, 'movies&url=%skereses.php?kereses=%s' % (base_url, urllib.quote_plus(item)), '', 'DefaultFolder.png')
+                self.addDirectoryItem(item, 'movies&url=%skereses.php?kereses=%s' % (base_url, quote_plus(item)), '', 'DefaultFolder.png')
             if len(items) > 0:
                 self.addDirectoryItem('Keresési előzmények törlése', 'deletesearchhistory', '', 'DefaultFolder.png') 
         except:
@@ -112,7 +119,7 @@ class navigator:
             file = open(self.searchFileName, "a")
             file.write("%s\n" % search_text)
             file.close()
-            self.getMovies("%skereses.php?kereses=%s" % (base_url, urllib.quote_plus(search_text)))
+            self.getMovies("%skereses.php?kereses=%s" % (base_url, quote_plus(search_text)))
 
 
     def getResults(self, search_text):
@@ -121,7 +128,7 @@ class navigator:
         innerFrameDiv = client.parseDOM(searchDiv, 'div', attrs={'class': 'inner_frame'})
         searchURL = client.parseDOM(innerFrameDiv, 'form', ret='action')[0]
         uid = client.parseDOM(innerFrameDiv, 'input', attrs={'id': 'uid'}, ret='value')[0]
-        url_content = client.request(searchURL, post="uid=%s&key=%s" % (uid, urllib.quote_plus(search_text)))
+        url_content = client.request(searchURL, post="uid=%s&key=%s" % (uid, quote_plus(search_text)))
         searchResult = client.parseDOM(url_content, 'div', attrs={'class': 'search-results'})
         resultsUser = client.parseDOM(searchResult, 'div', attrs={'class': 'results-user'})
         ul = client.parseDOM(resultsUser, 'ul')
@@ -130,8 +137,8 @@ class navigator:
             for li in lis:
                 href = client.parseDOM(li, 'a', ret='href')[0].replace('http://', 'https://').replace(base_url, '')
                 if "filmkeres-es-hibas-link-jelentese.html" not in href:
-                    title = client.parseDOM(li, 'a')[0].encode('utf-8')
-                    self.addDirectoryItem(title, 'movie&url=%s' % urllib.quote_plus(href), '', 'DefaultMovies.png')
+                    title = py2_encode(client.parseDOM(li, 'a')[0])
+                    self.addDirectoryItem(title, 'movie&url=%s' % quote_plus(href), '', 'DefaultMovies.png')
             self.endDirectory('movies')
         else:
             xbmcgui.Dialog().ok("OnlineFilmvilág2", "Nincs találat!")
@@ -140,7 +147,7 @@ class navigator:
         url_content = client.request(url)
         title = client.parseDOM(url_content, 'h1')[0]
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'kep_meret'}, ret='src')[0]
-        plot = client.replaceHTMLCodes(client.parseDOM(url_content, 'div', attrs={'class': 'leiras'})[1].encode('utf-8').replace("<h3>Leirás</h3>", ""))
+        plot = py2_encode(client.replaceHTMLCodes(client.parseDOM(url_content, 'div', attrs={'class': 'leiras'})[1]).replace("<h3>Leirás</h3>", ""))
         sourceCnt = 0
         linkektables = client.parseDOM(url_content, 'table', attrs={'id': 'linkek'})
         for linkektable in linkektables:
@@ -170,8 +177,8 @@ class navigator:
     def getMovie(self, url):
         url_content = client.request(url)
         if "megoszto_link" not in url_content:
-            xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % self.helper.replace("S", "=").replace("Y", "").decode('base64'), xbmc.LOGNOTICE)
-            url_content = client.request(url.replace("https", "http"), proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
+            xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % base64.b64decode(self.helper.replace("S", "=").replace("Y", "").encode('ascii')).decode('ascii'), xbmc.LOGINFO)
+            url_content = client.request(url.replace("https", "http"), proxy=base64.b64decode(self.helper.replace("S", "=").replace("Y", "").encode('ascii')).decode('ascii'))
         sourcesUrl = client.parseDOM(url_content, 'a', attrs={'id': 'megoszto_link'}, ret='href')[0]
         self.getSources(sourcesUrl)
 
@@ -182,8 +189,8 @@ class navigator:
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'poster'}, ret='src')[0]
         plot = client.replaceHTMLCodes(client.parseDOM(url_content, 'p', attrs={'itemprop': 'description'})[0])
         if "megoszto_link" not in url_content:
-            xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % self.helper.replace("S", "=").replace("Y", "").decode('base64'), xbmc.LOGNOTICE)
-            url_content = client.request(url.replace("https", "http"), proxy=self.helper.replace("S", "=").replace("Y", "").decode('base64'))
+            xbmc.log("onlinefilmek.me: megoszto_link not in page using proxy: %s " % base64.b64decode(self.helper.replace("S", "=").replace("Y", "").encode('ascii')).decode('ascii'), xbmc.LOGINFO)
+            url_content = client.request(url.replace("https", "http"), proxy=base64.b64decode(self.helper.replace("S", "=").replace("Y", "").encode('ascii')).decode('ascii'))
         episodes = client.parseDOM(url_content, 'div', attrs={'class': 'buttons buttons2'})[0].replace("</a>", "</a>\n")
         for episode in episodes.splitlines():
             matches = re.search(r'<a href="([^"]*)"(.*)>(.*)</a>(.*)', episode)
@@ -192,7 +199,7 @@ class navigator:
         self.endDirectory('episodes')
 
     def playmovie(self, url, host):
-        xbmc.log('onlinefilmek.me: resolving onlinefilmek.me url: %s' % url, xbmc.LOGNOTICE)
+        xbmc.log('onlinefilmek.me: resolving onlinefilmek.me url: %s' % url, xbmc.LOGINFO)
         url_content = client.request(url)
         mainContainer = client.parseDOM(url_content, 'div', attrs={'id': 'main_container'})[0]
         script = (u'%s' % client.parseDOM(mainContainer, 'script')[0])
@@ -202,20 +209,20 @@ class navigator:
             replaces = re.findall("_0x418837=_0x418837\['replace'\]\(([^\)]*)\)", script, re.S)
             for replace in replaces:
                 encoded = encoded.replace(replace[1], replace[6])
-            iFrame = encoded.decode('base64')
+            iFrame = base64.b64decode(encoded.encode('ascii')).decode('ascii')
             url = client.parseDOM(iFrame, 'iframe', ret='src')[0]
-            xbmc.log('onlinefilmek.me: founded url: %s, trying to resolve' % url, xbmc.LOGNOTICE)
+            xbmc.log('onlinefilmek.me: founded url: %s, trying to resolve' % url, xbmc.LOGINFO)
             try:
                 direct_url = urlresolver.resolve(url)
                 if direct_url:
-                    direct_url = direct_url.encode('utf-8')
+                    direct_url = py2_encode(direct_url)
                 else:
                     direct_url = url
             except Exception as e:
-                xbmcgui.Dialog().notification(host, e.message)
+                xbmcgui.Dialog().notification(host, str(e))
                 return
             if direct_url:
-                xbmc.log('onlinefilmek.me: playing URL: %s' % direct_url, xbmc.LOGNOTICE)
+                xbmc.log('onlinefilmek.me: playing URL: %s' % direct_url, xbmc.LOGINFO)
                 play_item = xbmcgui.ListItem(path=direct_url)
                 xbmcplugin.setResolvedUrl(syshandle, True, listitem=play_item)
         else:
@@ -226,7 +233,7 @@ class navigator:
         if thumb == '': thumb = icon
         cm = []
         if queue == True: cm.append((queueMenu, 'RunPlugin(%s?action=queueItem)' % sysaddon))
-        if not context == None: cm.append((context[0].encode('utf-8'), 'RunPlugin(%s?action=%s)' % (sysaddon, context[1])))
+        if not context == None: cm.append((py2_encode(context[0]), 'RunPlugin(%s?action=%s)' % (sysaddon, context[1])))
         item = xbmcgui.ListItem(label=name)
         item.addContextMenuItems(cm)
         item.setArt({'icon': thumb, 'thumb': thumb, 'poster': thumb, 'banner': banner})

@@ -1,4 +1,6 @@
-﻿[B]1.0.1[/B]
+﻿[B]1.0.2[/B]
+- Matrix kompatibilitás
+[B]1.0.1[/B]
 - Elérés tiltott IP-ről
 [B]1.0.0[/B]
 - Első verzió
