@@ -147,7 +147,7 @@ class navigator:
         url_content = client.request(url)
         title = client.parseDOM(url_content, 'h1')[0]
         thumb = client.parseDOM(url_content, 'img', attrs={'class': 'kep_meret'}, ret='src')[0]
-        plot = py2_encode(client.replaceHTMLCodes(client.parseDOM(url_content, 'div', attrs={'class': 'leiras'})[1]).replace("<h3>Leirás</h3>", ""))
+        plot = py2_encode(client.replaceHTMLCodes(client.parseDOM(url_content, 'div', attrs={'class': 'leiras'})[1])).replace("<h3>Leirás</h3>", "")
         sourceCnt = 0
         linkektables = client.parseDOM(url_content, 'table', attrs={'id': 'linkek'})
         for linkektable in linkektables:
