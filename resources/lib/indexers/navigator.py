@@ -39,7 +39,7 @@ helperStr = 'ZYYZOTUuMTExLjIzMC4xNDI6MzEyOAZZWZWZZZYYYZZ'
 class navigator:
     def __init__(self):
         try:
-            locale.setlocale(locale.LC_ALL, "")
+            locale.setlocale(locale.LC_ALL, '')
         except:
             pass
         self.base_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
@@ -95,9 +95,14 @@ class navigator:
         self.addDirectoryItem('Új keresés', 'newsearch', '', 'DefaultFolder.png')
         try:
             file = open(self.searchFileName, "r")
-            items = file.read().splitlines()
-            items.sort(cmp=locale.strcoll)
+            olditems = file.read().splitlines()
             file.close()
+            items = list(set(olditems))
+            items.sort(key=locale.strxfrm)
+            if len(items) != len(olditems):
+                file = open(self.searchFileName, "w")
+                file.write("\n".join(items))
+                file.close()
             for item in items:
                 self.addDirectoryItem(item, 'movies&url=%skereses.php?kereses=%s' % (base_url, quote_plus(item)), '', 'DefaultFolder.png')
             if len(items) > 0:
