@@ -1,4 +1,6 @@
-﻿[B]1.0.3[/B]
+﻿[B]1.0.4[/B]
+- Profile path dekódolás
+[B]1.0.3[/B]
 - Keresési előzmények javítása
 [B]1.0.2[/B]
 - Matrix kompatibilitás
